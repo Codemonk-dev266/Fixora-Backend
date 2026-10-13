@@ -13,6 +13,8 @@ import {
 } from "../controllers/jobsController.js";
 import pagination from "../middleWare/pagination.js";
 
+
+
 const router = express.Router();
 
 router.post("/", authMiddleWare, CreateJobs);

@@ -3,7 +3,10 @@ import connectDB from "./src/config/mongodb.js";
 import userRoute from "./src/Routes/userRouter.js";
 import jobRoute from "./src/Routes/jobRoute.js";
 
+
+
 const PORT = process.env.PORT || 5000;
+
 
 connectDB();
 

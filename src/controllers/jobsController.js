@@ -299,7 +299,6 @@ export const completeJob = async (req, res, next) => {
 // cancel jobs status
 export const cancelJob = async (req, res, next) => {
   try {
-
     // Only customers can cancel jobs
     if (req.user.role !== "customer") {
       return res.status(403).json({
@@ -339,7 +338,7 @@ export const cancelJob = async (req, res, next) => {
 
     // Update the job status
     job.status = "cancelled";
-    
+
     await job.save();
 
     return res.status(200).json({
