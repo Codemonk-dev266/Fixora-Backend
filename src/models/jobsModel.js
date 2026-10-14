@@ -1,5 +1,7 @@
 import mongoose from "mongoose";
 
+export const job_categories = ["plumbing", "typing", "electricals", "cleaning", "painting", "carpentry", "writing", "laundry", "tutoring", "gardening", "other" ]
+
 const jobSchema = new mongoose.Schema(
   {
     customer: {
@@ -45,6 +47,11 @@ const jobSchema = new mongoose.Schema(
         "awaiting_confirmation",
       ],
       default: "requested",
+    },
+    category: {
+      required: true,
+      enum: job_categories,
+      type: String,
     },
   },
   { timestamps: true },

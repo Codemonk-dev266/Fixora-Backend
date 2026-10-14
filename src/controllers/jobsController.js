@@ -3,9 +3,9 @@ import Job from "../models/jobsModel.js";
 // create jobs
 export const CreateJobs = async (req, res, next) => {
   try {
-    const { service, description, price, location } = req.body;
+    const { service, description, price, location, category } = req.body;
 
-    if (!service || !description || !price || !location) {
+    if (!service || !description || !price || !location || !category) {
       return res
         .status(400)
         .json({ message: "please fill the required fields" });
@@ -17,6 +17,7 @@ export const CreateJobs = async (req, res, next) => {
       description,
       price,
       location,
+      category,
     });
     res.status(201).json({ message: "job created successfully", data: job });
   } catch (error) {
@@ -38,7 +39,10 @@ export const getAvailableJobs = async (req, res, next) => {
       .skip(skip)
       .limit(limit);
 
-    const totalJobs = await Job.countDocuments();
+    const totalJobs = await Job.countDocuments({
+      status: "requested",
+      provider: null,
+    });
 
     // console.log("pagination:", req.pagination);
 
@@ -89,6 +93,35 @@ export const getCustomersJob = async (req, res, next) => {
     });
 
     res.status(200).json({ message: "your jobs fetched successfully", job });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// get job by category
+
+export const getJobByCategory = async (req, res, next) => {
+  try {
+const {page, limit, skip} = req.pagination
+   
+    const category = req.params.category.toLowerCase();
+
+    const validCategories = Job.schema.path("category").enumValues;
+
+    if (!validCategories.includes(category)) {
+      return res.status(400).json({ message: "Invalid job category" });
+    }
+
+    const jobs = await Job.find({
+      status: "requested",
+      category,
+      provider: null,
+    }) .populate("customer", "name").sort({createdAt: -1}).skip(skip).limit(limit)
+
+    res.status(200).json({ message: " jobs fetched successfully", data:jobs, success: true, pagination: {
+      page,
+      limit,
+    }});
   } catch (error) {
     next(error);
   }
@@ -168,8 +201,11 @@ export const JobInProgress = async (req, res, next) => {
       });
     }
 
-    if (job.provider.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ message: "unAuthorized" });
+    if (job.customer.toString() !== req.user._id.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: "Only the customer who created this job can cancel it",
+      });
     }
 
     job.status = "in_progress";
