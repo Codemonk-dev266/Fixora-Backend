@@ -14,6 +14,7 @@ app.use(
       "http://localhost:5173",
       "https://fixora-frontend-five.vercel.app",
     ],
+    credentials: true,
   })
 );
 
