@@ -6,12 +6,18 @@ dotenv.config();
 
 const app = express();
 
+
 // Configure CORS
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: [
+      "http://localhost:5173",
+      "https://fixora-frontend-five.vercel.app",
+    ],
   })
 );
+
+
 
 // Middleware
 app.use(express.json());
