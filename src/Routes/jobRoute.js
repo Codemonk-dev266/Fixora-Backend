@@ -1,4 +1,3 @@
-
 import express from "express";
 
 import authMiddleWare from "../middleWare/authMiddleware.js";
@@ -6,6 +5,8 @@ import authMiddleWare from "../middleWare/authMiddleware.js";
 import {
   acceptJob,
   cancelJob,
+  changeCustomerJobSatatus,
+  ChangeProviderJobStatus,
   completeJob,
   CreateJobs,
   getAvailableJobs,
@@ -93,7 +94,6 @@ const router = express.Router();
  *           example: "Job not found"
  */
 
-
 /**
  * @swagger
  * /api/jobs:
@@ -169,7 +169,6 @@ const router = express.Router();
  */
 router.post("/", authMiddleWare, CreateJobs);
 
-
 /**
  * @swagger
  * /api/jobs/available_jobs:
@@ -228,8 +227,6 @@ router.post("/", authMiddleWare, CreateJobs);
  *         description: Internal server error
  */
 router.get("/available_jobs", pagination, getAvailableJobs);
-
-
 
 /**
  * @swagger
@@ -310,7 +307,6 @@ router.get("/available_jobs", pagination, getAvailableJobs);
  *         description: Internal server error
  */
 router.get("/category/:category", pagination, getJobByCategory);
-
 
 /**
  * @swagger
@@ -558,6 +554,130 @@ router.patch("/:id/update_job_to_completed", authMiddleWare, completeJob);
  */
 router.patch("/:id/update_job_to_cancelled", authMiddleWare, cancelJob);
 
+/**
+ * @swagger
+ * /api/jobs/{id}/provider-status:
+ *   patch:
+ *     summary: Update job status as a provider
+ *     description: |
+ *       Allows an authenticated provider to update the status of a job.
+ *       The provider must be authorized to perform the requested transition.
+ *     tags: [Jobs]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: MongoDB ObjectId of the job
+ *         example: "671a2b3c4d5e6f7890123456"
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - status
+ *             properties:
+ *               status:
+ *                 type: string
+ *                 enum:
+ *                   - accepted
+ *                   - in_progress
+ *                   - awaiting_confirmation
+ *                 description: The new status requested by the provider
+ *                 example: in_progress
+ *     responses:
+ *       200:
+ *         description: Job status updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Job status updated successfully
+ *                 job:
+ *                   type: object
+ *                   description: Updated job document
+ *       400:
+ *         description: Invalid job ID, status, or status transition
+ *       401:
+ *         description: Authentication required or token invalid
+ *       403:
+ *         description: User is not authorized to update this job
+ *       404:
+ *         description: Job not found
+ *       500:
+ *         description: Internal server error
+ */
+router.patch("/:id/provider-status", authMiddleWare, ChangeProviderJobStatus);
 
+/**
+ * @swagger
+ * /api/jobs/{id}/customer-status:
+ *   patch:
+ *     summary: Update job status as a customer
+ *     description: |
+ *       Allows an authenticated customer to update the status of a job.
+ *       The customer must be authorized to perform the requested transition.
+ *     tags: [Jobs]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: MongoDB ObjectId of the job
+ *         example: "671a2b3c4d5e6f7890123456"
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - status
+ *             properties:
+ *               status:
+ *                 type: string
+ *                 enum:
+ *                   - completed
+ *                   - cancelled
+ *                 description: The new status requested by the customer
+ *                 example: completed
+ *     responses:
+ *       200:
+ *         description: Job status updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Job status updated successfully
+ *                 job:
+ *                   type: object
+ *                   description: Updated job document
+ *       400:
+ *         description: Invalid job ID, status, or status transition
+ *       401:
+ *         description: Authentication required or token invalid
+ *       403:
+ *         description: User is not authorized to update this job
+ *       404:
+ *         description: Job not found
+ *       500:
+ *         description: Internal server error
+ */
+
+router.patch("/:id/customer-status", authMiddleWare, changeCustomerJobSatatus);
 
 export default router;
