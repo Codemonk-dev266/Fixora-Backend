@@ -13,6 +13,7 @@ import {
   getCustomersJob,
   getJobByCategory,
   getJobById,
+  getJobCategories,
   JobInProgress,
   reviewJob,
 } from "../controllers/jobsController.js";
