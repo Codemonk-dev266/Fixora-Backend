@@ -449,7 +449,7 @@ export const ChangeProviderJobStatus = async (req, res, next) => {
       }
       return res.status(409).json({
         message:
-          "job is unavailble,  has been assigned to another provider or has an invalid transition status",
+          "Job cannot be updated because its current status does not allow this transition",
       });
     }
 

@@ -559,19 +559,25 @@ router.patch("/:id/update_job_to_cancelled", authMiddleWare, cancelJob);
  * /api/jobs/{id}/provider-status:
  *   patch:
  *     summary: Update job status as a provider
- *     description: |
- *       Allows an authenticated provider to update the status of a job.
- *       The provider must be authorized to perform the requested transition.
  *     tags: [Jobs]
+ *     description: |
+ *       Allows an authenticated provider to update a job's status.
+ *
+ *       Permitted transitions:
+ *       - requested -> accepted
+ *       - accepted -> in_progress
+ *       - in_progress -> awaiting_confirmation
+ *
+ *       Accepting a job automatically assigns it to the provider.
  *     security:
  *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
+ *         description: MongoDB ObjectId of the job
  *         schema:
  *           type: string
- *         description: MongoDB ObjectId of the job
  *         example: "671a2b3c4d5e6f7890123456"
  *     requestBody:
  *       required: true
@@ -588,10 +594,9 @@ router.patch("/:id/update_job_to_cancelled", authMiddleWare, cancelJob);
  *                   - accepted
  *                   - in_progress
  *                   - awaiting_confirmation
- *                 description: The new status requested by the provider
- *                 example: in_progress
+ *                 example: accepted
  *     responses:
- *       200:
+ *       "200":
  *         description: Job status updated successfully
  *         content:
  *           application/json:
@@ -600,21 +605,52 @@ router.patch("/:id/update_job_to_cancelled", authMiddleWare, cancelJob);
  *               properties:
  *                 message:
  *                   type: string
- *                   example: Job status updated successfully
+ *                   example: status updated successfully
  *                 job:
- *                   type: object
- *                   description: Updated job document
- *       400:
- *         description: Invalid job ID, status, or status transition
- *       401:
+ *                   $ref: '#/components/schemas/Job'
+ *
+ *       "400":
+ *         description: Invalid job ID or provider status
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *             examples:
+ *               invalidId:
+ *                 value:
+ *                   message: invalid Id
+ *               invalidStatus:
+ *                 value:
+ *                   message: invalid provider status
+ *
+ *       "401":
  *         description: Authentication required or token invalid
- *       403:
- *         description: User is not authorized to update this job
- *       404:
+ *
+ *       "403":
+ *         description: Only providers can perform this action
+ *
+ *       "404":
  *         description: Job not found
- *       500:
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *             example:
+ *               message: job not found
+ *
+ *       "409":
+ *         description: Job is unavailable or its current status does not permit the transition
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *             example:
+ *               message: job is unavailable, has been assigned to another provider or has an invalid transition status
+ *
+ *       "500":
  *         description: Internal server error
  */
+
 router.patch("/:id/provider-status", authMiddleWare, ChangeProviderJobStatus);
 
 /**
@@ -622,19 +658,23 @@ router.patch("/:id/provider-status", authMiddleWare, ChangeProviderJobStatus);
  * /api/jobs/{id}/customer-status:
  *   patch:
  *     summary: Update job status as a customer
- *     description: |
- *       Allows an authenticated customer to update the status of a job.
- *       The customer must be authorized to perform the requested transition.
  *     tags: [Jobs]
+ *     description: |
+ *       Allows an authenticated customer to update the status of a job
+ *       that belongs to them.
+ *
+ *       Permitted transitions:
+ *       - awaiting_confirmation -> completed
+ *       - requested -> cancel
  *     security:
  *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
+ *         description: MongoDB ObjectId of the job
  *         schema:
  *           type: string
- *         description: MongoDB ObjectId of the job
  *         example: "671a2b3c4d5e6f7890123456"
  *     requestBody:
  *       required: true
@@ -649,11 +689,10 @@ router.patch("/:id/provider-status", authMiddleWare, ChangeProviderJobStatus);
  *                 type: string
  *                 enum:
  *                   - completed
- *                   - cancelled
- *                 description: The new status requested by the customer
+ *                   - cancel
  *                 example: completed
  *     responses:
- *       200:
+ *       "200":
  *         description: Job status updated successfully
  *         content:
  *           application/json:
@@ -664,20 +703,49 @@ router.patch("/:id/provider-status", authMiddleWare, ChangeProviderJobStatus);
  *                   type: string
  *                   example: Job status updated successfully
  *                 job:
- *                   type: object
- *                   description: Updated job document
- *       400:
- *         description: Invalid job ID, status, or status transition
- *       401:
+ *                   $ref: '#/components/schemas/Job'
+ *
+ *       "400":
+ *         description: Invalid job ID or customer status
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *             examples:
+ *               invalidId:
+ *                 value:
+ *                   message: Invalid job ID
+ *               invalidStatus:
+ *                 value:
+ *                   message: Invalid customer status
+ *
+ *       "401":
  *         description: Authentication required or token invalid
- *       403:
- *         description: User is not authorized to update this job
- *       404:
+ *
+ *       "403":
+ *         description: Only customers can perform this action
+ *
+ *       "404":
  *         description: Job not found
- *       500:
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *             example:
+ *               message: Job not found
+ *
+ *       "409":
+ *         description: Customer does not own the job or the current status does not permit the transition
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *             example:
+ *               message: Job cannot be updated because you do not own it or its current status does not permit this transition
+ *
+ *       "500":
  *         description: Internal server error
  */
-
 router.patch("/:id/customer-status", authMiddleWare, changeCustomerJobSatatus);
 
 export default router;
