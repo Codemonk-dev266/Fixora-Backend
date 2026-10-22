@@ -230,6 +230,55 @@ router.get("/available_jobs", pagination, getAvailableJobs);
 
 /**
  * @swagger
+ * /api/jobs/categories:
+ *   get:
+ *     summary: Get all job categories
+ *     description: Returns all available service categories supported by Fixora.
+ *     tags:
+ *       - Jobs
+ *     responses:
+ *       200:
+ *         description: Job categories retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               required:
+ *                 - categories
+ *               properties:
+ *                 categories:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *                     enum:
+ *                       - plumbing
+ *                       - typing
+ *                       - electricals
+ *                       - cleaning
+ *                       - painting
+ *                       - carpentry
+ *                       - writing
+ *                       - laundry
+ *                       - tutoring
+ *                       - gardening
+ *                       - other
+ *                   example:
+ *                     - plumbing
+ *                     - typing
+ *                     - electricals
+ *                     - cleaning
+ *                     - painting
+ *                     - carpentry
+ *                     - writing
+ *                     - laundry
+ *                     - tutoring
+ *                     - gardening
+ *                     - other
+ */
+router.get("/categories", getJobCategories);
+
+/**
+ * @swagger
  * /api/jobs/category/{category}:
  *   get:
  *     summary: Get available jobs by category

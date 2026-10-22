@@ -1,5 +1,6 @@
 import mongoose, { isValidObjectId } from "mongoose";
 import Job from "../models/jobsModel.js";
+import { job_categories } from "../models/jobModel.js";
 
 // create jobs
 export const CreateJobs = async (req, res, next) => {
@@ -99,8 +100,14 @@ export const getCustomersJob = async (req, res, next) => {
   }
 };
 
-// get job by category
+// get job categories only
+export const getJobCategories = (req, res) => {
+  return res.status(200).json({
+    categories: job_categories,
+  });
+};
 
+// get job by category
 export const getJobByCategory = async (req, res, next) => {
   try {
     const { page, limit, skip } = req.pagination;

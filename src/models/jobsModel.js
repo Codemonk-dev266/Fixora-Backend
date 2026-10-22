@@ -1,6 +1,18 @@
 import mongoose from "mongoose";
 
-export const job_categories = ["plumbing", "typing", "electricals", "cleaning", "painting", "carpentry", "writing", "laundry", "tutoring", "gardening", "other" ]
+export const job_categories = [
+  "plumbing",
+  "typing",
+  "electricals",
+  "cleaning",
+  "painting",
+  "carpentry",
+  "writing",
+  "laundry",
+  "tutoring",
+  "gardening",
+  "other",
+];
 
 const jobSchema = new mongoose.Schema(
   {
