@@ -1,6 +1,5 @@
 import mongoose, { isValidObjectId } from "mongoose";
-import Job from "../models/jobsModel.js";
-import { job_categories } from "../models/jobModel.js";
+import Job, { job_categories } from "../models/jobsModel.js";
 
 // create jobs
 export const CreateJobs = async (req, res, next) => {
