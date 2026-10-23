@@ -84,7 +84,7 @@ const swaggerOptions = {
                 "in_progress",
                 "awaiting_confirmation",
                 "completed",
-                "cancel",
+                "cancelled",
               ],
               example: "accepted",
             },

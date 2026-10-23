@@ -349,59 +349,6 @@ export const completeJob = async (req, res, next) => {
 };
 
 // cancel jobs status
-export const cancelJob = async (req, res, next) => {
-  try {
-    // Only customers can cancel jobs
-    if (req.user.role !== "customer") {
-      return res.status(403).json({
-        success: false,
-        message: "Only customers can cancel jobs",
-      });
-    }
-
-    const { id } = req.params;
-
-    // Find the job
-    const job = await Job.findById(id);
-
-    // if not job
-    if (!job) {
-      return res.status(404).json({
-        success: false,
-        message: "Job not found",
-      });
-    }
-
-    // validate that only the customer who created the job can cancel it
-    if (job.customer.toString() !== req.user.id) {
-      return res.status(403).json({
-        success: false,
-        message: "Only the customer who created this job can cancel it",
-      });
-    }
-
-    // A job can only be cancelled if its status is requested
-    if (job.status !== "requested") {
-      return res.status(400).json({
-        success: false,
-        message: "Only requested jobs can be cancelled",
-      });
-    }
-
-    // Update the job status
-    job.status = "cancel";
-
-    await job.save();
-
-    return res.status(200).json({
-      success: true,
-      message: "Job cancelled successfully",
-      job,
-    });
-  } catch (error) {
-    next(error);
-  }
-};
 
 export const ChangeProviderJobStatus = async (req, res, next) => {
   try {
@@ -488,7 +435,7 @@ export const changeCustomerJobSatatus = async (req, res, next) => {
     // 3. Define permitted status transitions
     const transitions = {
       completed: "awaiting_confirmation",
-      cancel: "requested",
+      cancelled: "requested",
     };
 
     // 4. Validate requested status
@@ -563,7 +510,7 @@ export const changeCustomerJobSatatus = async (req, res, next) => {
 //       "in_progress",
 //       "awaiting_confirmation",
 //       "completed",
-//       "cancel",
+//       "cancelled",
 //     ];
 
 //     if (!allowedStatuses.includes(status)) {
@@ -590,7 +537,7 @@ export const changeCustomerJobSatatus = async (req, res, next) => {
 //       }
 //     }
 
-//     if (status !== "cancel") {
+//     if (status !== "cancelled") {
 //       return res
 //         .status(403)
 //         .json({ message: "customers can only can cancel job" });

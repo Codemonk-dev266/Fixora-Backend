@@ -715,7 +715,7 @@ router.patch("/:id/provider-status", authMiddleWare, ChangeProviderJobStatus);
  *
  *       Permitted transitions:
  *       - awaiting_confirmation -> completed
- *       - requested -> cancel
+ *       - requested -> cancelled
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -739,7 +739,7 @@ router.patch("/:id/provider-status", authMiddleWare, ChangeProviderJobStatus);
  *                 type: string
  *                 enum:
  *                   - completed
- *                   - cancel
+ *                   - cancelled
  *                 example: completed
  *     responses:
  *       "200":

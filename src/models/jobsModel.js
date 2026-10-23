@@ -56,7 +56,7 @@ const jobSchema = new mongoose.Schema(
         "in_progress",
         "awaiting_confirmation",
         "completed",
-        "cancel",
+        "cancelled",
       ],
       default: "requested",
     },
