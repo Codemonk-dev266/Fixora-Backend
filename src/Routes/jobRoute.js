@@ -14,6 +14,7 @@ import {
   getJobByCategory,
   getJobById,
   getJobCategories,
+  getProviderJobs,
   JobInProgress,
   reviewJob,
 } from "../controllers/jobsController.js";
@@ -423,6 +424,53 @@ router.get("/available_jobs/:_id", getJobById);
  *         description: Internal server error
  */
 router.get("/my_jobs", authMiddleWare, getCustomersJob);
+
+/**
+ * @swagger
+ * /api/jobs/provider/my_jobs:
+ *   get:
+ *     summary: Get jobs assigned to the authenticated provider
+ *     description: |
+ *       Retrieves all jobs assigned to the currently authenticated provider,
+ *       ordered by creation date from newest to oldest.
+ *
+ *       Requires a valid JWT token and provider authentication.
+ *     tags:
+ *       - Jobs
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       "200":
+ *         description: Provider jobs fetched successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               required:
+ *                 - message
+ *                 - jobs
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Provider jobs fetched successfully
+ *                 jobs:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Job'
+ *       "401":
+ *         description: Authentication required or JWT token is invalid
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *             example:
+ *               message: Unauthorized
+ *       "403":
+ *         description: User does not have provider permissions
+ *       "500":
+ *         description: Internal server error
+ */
+router.get("/provider/my_jobs", authMiddleWare, getProviderJobs);
 
 /**
  * @swagger

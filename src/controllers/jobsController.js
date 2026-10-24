@@ -99,6 +99,23 @@ export const getCustomersJob = async (req, res, next) => {
   }
 };
 
+export const getProviderJobs = async (req, res, next) => {
+  try {
+    const providerId = req.user.userId;
+
+    const jobs = await Job.find({
+      provider: providerId,
+    }).sort({ createdAt: -1 });
+
+    return res.status(200).json({
+      message: "Provider jobs fetched successfully",
+      jobs,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 // get job categories only
 export const getJobCategories = (req, res) => {
   return res.status(200).json({
