@@ -481,6 +481,7 @@ export const ChangeProviderJobStatus = async (req, res, next) => {
 
     res.status(200).json({ message: "status updated successfully", job });
   } catch (error) {
+    console.error("ChangeProviderJobStatus error:", error);
     next(error);
   }
 };
