@@ -29,7 +29,10 @@ const authMiddleWare = async (req, res, next) => {
     if (!user) {
       return res.status(401).json({ message: "user does not exist" });
     }
-    req.user = user;
+    req.user = {
+      userId: decoded.userId,
+      role: user.role,
+    };
     next();
   } catch (error) {
     next(error);

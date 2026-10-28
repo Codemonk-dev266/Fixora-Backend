@@ -101,17 +101,35 @@ export const getCustomersJob = async (req, res, next) => {
 
 export const getProviderJobs = async (req, res, next) => {
   try {
-    const providerId = req.user.userId;
+    const providerId = req.user?.userId ?? req.user?._id;
+
+    if (!providerId) {
+      return res.status(401).json({
+        message: "Authenticated provider ID is missing",
+      });
+    }
+
+    if (req.user?.role !== "provider") {
+      return res.status(403).json({
+        message: "Only providers can access their jobs",
+      });
+    }
 
     const jobs = await Job.find({
       provider: providerId,
-    }).sort({ createdAt: -1 });
+      status: {
+        $in: ["accepted", "in_progress", "awaiting_confirmation"],
+      },
+    })
+      .populate("customer", "name")
+      .sort({ updatedAt: -1 });
 
     return res.status(200).json({
       message: "Provider jobs fetched successfully",
       jobs,
     });
   } catch (error) {
+    console.error("getProviderJobs error:", error);
     next(error);
   }
 };
@@ -427,18 +445,31 @@ export const ChangeProviderJobStatus = async (req, res, next) => {
   try {
     const { id } = req.params;
     const { status } = req.body;
-    const userId = req.user._id;
 
-    if (req.user.role !== "provider") {
-      return res
-        .status(403)
-        .json({ message: "Only provisers can perform this action" });
+    // Get the authenticated provider's ID.
+    // Your JWT contains { userId }, so support that property.
+    const userId = req.user?.userId ?? req.user?._id;
+
+    // Only providers can update provider job statuses.
+    if (req.user?.role !== "provider") {
+      return res.status(403).json({
+        message: "Only providers can perform this action",
+      });
+    }
+
+    if (!userId) {
+      return res.status(401).json({
+        message: "Authenticated provider ID is missing",
+      });
     }
 
     if (!mongoose.isValidObjectId(id)) {
-      return res.status(400).json({ message: "invalid Id" });
+      return res.status(400).json({
+        message: "Invalid job ID",
+      });
     }
 
+    // Allowed provider status transitions.
     const transitions = {
       accepted: "requested",
       in_progress: "accepted",
@@ -446,18 +477,24 @@ export const ChangeProviderJobStatus = async (req, res, next) => {
     };
 
     if (!Object.hasOwn(transitions, status)) {
-      return res.status(400).json({ message: "invalid provider status" });
+      return res.status(400).json({
+        message: "Invalid provider status",
+      });
     }
 
+    // Match the expected previous status and enforce ownership.
     const filter = {
       _id: id,
       status: transitions[status],
       ...(status === "accepted" ? { provider: null } : { provider: userId }),
     };
 
-    // set changes/updates a field without replacing the whole document
+    // Assign the provider when accepting; otherwise only change status.
     const update = {
-      $set: { status, ...(status === "accepted" ? { provider: userId } : {}) },
+      $set: {
+        status,
+        ...(status === "accepted" ? { provider: userId } : {}),
+      },
     };
 
     const job = await Job.findOneAndUpdate(filter, update, {
@@ -471,15 +508,21 @@ export const ChangeProviderJobStatus = async (req, res, next) => {
       const existingJob = await Job.findById(id);
 
       if (!existingJob) {
-        return res.status(404).json({ message: "job not found" });
+        return res.status(404).json({
+          message: "Job not found",
+        });
       }
+
       return res.status(409).json({
         message:
-          "Job cannot be updated because its current status does not allow this transition",
+          "Job cannot be updated. It may already be assigned, or its current status does not allow this transition.",
       });
     }
 
-    res.status(200).json({ message: "status updated successfully", job });
+    return res.status(200).json({
+      message: "Job status updated successfully",
+      job,
+    });
   } catch (error) {
     console.error("ChangeProviderJobStatus error:", error);
     next(error);
