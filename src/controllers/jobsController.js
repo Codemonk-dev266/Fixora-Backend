@@ -73,10 +73,22 @@ export const getAvailableJobs = async (req, res, next) => {
 // get single job
 export const getJobById = async (req, res, next) => {
   try {
-    const job = await Job.findById(req.params._id);
+    const { id } = req.params;
+
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(400).json({
+        message: "Invalid job ID",
+      });
+    }
+
+    const job = await Job.findById(id)
+      .populate("customer", "name")
+      .populate("provider", "name");
 
     if (!job) {
-      return res.status(404).json({ message: "This job does not exist" });
+      return res.status(404).json({
+        message: "Job not found",
+      });
     }
 
     res.status(200).json({ message: "Job fetched successfully", job });
@@ -86,7 +98,6 @@ export const getJobById = async (req, res, next) => {
 };
 
 // get customer jobs by customer id
-
 export const getCustomersJob = async (req, res, next) => {
   try {
     const customerId = req.user.userId;
