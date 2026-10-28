@@ -89,11 +89,30 @@ export const getJobById = async (req, res, next) => {
 
 export const getCustomersJob = async (req, res, next) => {
   try {
-    const job = await Job.find({
-      customer: req.user._id,
-    });
+    const customerId = req.user.userId;
 
-    res.status(200).json({ message: "your jobs fetched successfully", job });
+    if (!customerId) {
+      return res.status(401).json({
+        message: "Authenticated customer ID is missing",
+      });
+    }
+
+    if (req.user?.role !== "customer") {
+      return res.status(403).json({
+        message: "Only customers can access their jobs",
+      });
+    }
+
+    const jobs = await Job.find({
+      customer: customerId,
+    })
+      .populate("provider", "name")
+      .sort({ updatedAt: -1 });
+
+    return res.status(200).json({
+      message: "Your jobs fetched successfully",
+      jobs,
+    });
   } catch (error) {
     next(error);
   }
