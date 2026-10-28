@@ -25,6 +25,7 @@
   "license": "ISC",
   "type": "module",
   "devDependencies": {
-    "cross-env": "^10.1.0"
+    "cross-env": "^10.1.0",
+    "jest": "^30.5.2"
   }
 }
