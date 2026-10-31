@@ -392,7 +392,7 @@ router.get("/category/:category", pagination, getJobByCategory);
  *       500:
  *         description: Internal server error
  */
-router.get("/available_jobs/:_id", getJobById);
+router.get("/available_jobs/:id", getJobById);
 
 /**
  * @swagger

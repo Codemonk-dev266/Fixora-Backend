@@ -75,6 +75,8 @@ export const getJobById = async (req, res, next) => {
   try {
     const { id } = req.params;
 
+    console.log("Job ID received by backend:", id);
+
     if (!mongoose.isValidObjectId(id)) {
       return res.status(400).json({
         message: "Invalid job ID",
@@ -91,9 +93,12 @@ export const getJobById = async (req, res, next) => {
       });
     }
 
-    res.status(200).json({ message: "Job fetched successfully", job });
+    return res.status(200).json({
+      message: "Job fetched successfully",
+      job,
+    });
   } catch (error) {
-    next();
+    next(error);
   }
 };
 
